@@ -1,0 +1,30 @@
+# Xiaomi configuration options
+
+config MACH_XIAOMI
+	bool "Xiaomi device"
+	depends on ARCH_QCOM
+	help
+	  Support for Xiaomi products
+
+config MACH_XIAOMI_SM6115
+	bool "Xiaomi SM6115"
+	depends on ARCH_QCOM
+	select MACH_XIAOMI
+	help
+	  Support for Xiaomi SM6115 devices
+
+menu "Xiaomi board selection"
+
+	config MACH_XIAOMI_CITRUS
+                bool "Xiaomi citrus board"
+                select MACH_XIAOMI_SM6115
+                help
+                  Support for POCO M3
+
+	config MACH_XIAOMI_LIME
+                bool "Xiaomi lime board"
+                select MACH_XIAOMI_SM6115
+                help
+                  Support for Redmi 9T
+
+endmenu

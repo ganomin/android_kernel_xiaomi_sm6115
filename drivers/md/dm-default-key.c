@@ -1,6 +1,16 @@
 // SPDX-License-Identifier: GPL-2.0
 /*
  * Copyright (C) 2017 Google, Inc.
+ * Copyright (C) 2020 XiaoMi, Inc.
+ *
+ * This software is licensed under the terms of the GNU General Public
+ * License version 2, as published by the Free Software Foundation, and
+ * may be copied, distributed, and modified under those terms.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
  */
 
 #include <linux/blk-crypto.h>
@@ -258,6 +268,7 @@ static int default_key_ctr(struct dm_target *ti, unsigned int argc, char **argv)
 		err = -EINVAL;
 		goto bad;
 	}
+	dkc->key.size = key_size;
 
 	/* <iv_offset> */
 	if (sscanf(argv[2], "%llu%c", &dkc->iv_offset, &dummy) != 1) {

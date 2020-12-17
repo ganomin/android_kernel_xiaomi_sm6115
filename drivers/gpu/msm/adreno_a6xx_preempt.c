@@ -2,6 +2,7 @@
 /*
  * Copyright (c) 2017-2020, The Linux Foundation. All rights reserved.
  * Copyright (c) 2022-2023, Qualcomm Innovation Center, Inc. All rights reserved.
+ * Copyright (C) 2020 XiaoMi, Inc.
  */
 
 #include "adreno.h"
@@ -546,7 +547,8 @@ unsigned int a6xx_preemption_pre_ibsubmit(
 	if (context) {
 		struct adreno_context *drawctxt = ADRENO_CONTEXT(context);
 		struct adreno_ringbuffer *rb = drawctxt->rb;
-		uint64_t dest = PREEMPT_SCRATCH_ADDR(adreno_dev, rb->id);
+		uint64_t dest = adreno_dev->preempt.scratch.gpuaddr +
+			sizeof(u64) * rb->id;
 
 		*cmds++ = cp_mem_packet(adreno_dev, CP_MEM_WRITE, 2, 2);
 		cmds += cp_gpuaddr(adreno_dev, cmds, dest);
@@ -579,7 +581,8 @@ unsigned int a6xx_preemption_post_ibsubmit(struct adreno_device *adreno_dev,
 	struct adreno_ringbuffer *rb = adreno_dev->cur_rb;
 
 	if (rb) {
-		uint64_t dest = PREEMPT_SCRATCH_ADDR(adreno_dev, rb->id);
+		uint64_t dest = adreno_dev->preempt.scratch.gpuaddr +
+			sizeof(u64) * rb->id;
 
 		*cmds++ = cp_mem_packet(adreno_dev, CP_MEM_WRITE, 2, 2);
 		cmds += cp_gpuaddr(adreno_dev, cmds, dest);
@@ -779,8 +782,8 @@ int a6xx_preemption_init(struct adreno_device *adreno_dev)
 
 	timer_setup(&preempt->timer, _a6xx_preemption_timer, 0);
 
-	ret = kgsl_allocate_global(device, &preempt->scratch, PAGE_SIZE, 0,
-			flags, "preemption_scratch");
+	ret = kgsl_allocate_global(device, &preempt->scratch, PAGE_SIZE, 0, 0,
+			"preemption_scratch");
 
 	/* Allocate mem for storing preemption switch record */
 	FOR_EACH_RINGBUFFER(adreno_dev, rb, i) {

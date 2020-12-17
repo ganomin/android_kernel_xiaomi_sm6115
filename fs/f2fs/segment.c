@@ -3,6 +3,7 @@
  * fs/f2fs/segment.c
  *
  * Copyright (c) 2012 Samsung Electronics Co., Ltd.
+ * Copyright (C) 2020 XiaoMi, Inc.
  *             http://www.samsung.com/
  */
 #include <linux/fs.h>
@@ -313,7 +314,7 @@ next:
 skip:
 		iput(inode);
 	}
-	congestion_wait(BLK_RW_ASYNC, DEFAULT_IO_TIMEOUT);
+	congestion_wait(BLK_RW_ASYNC, HZ/50);
 	cond_resched();
 	if (gc_failure) {
 		if (++looped >= count)

@@ -164,4 +164,344 @@ config QCOM_APR
           application processor and QDSP6. APR is
           used by audio driver to configure QDSP6
           ASM, ADM and AFE modules.
+
+config MSM_CORE_HANG_DETECT
+	tristate "MSM Core Hang Detection Support"
+	help
+	  This enables the core hang detection module. It causes SoC
+	  reset on core hang detection and collects the core context
+	  for hang. By using sysfs entries core hang detection can be
+	  enabled or disabled dynamically.
+
+config MSM_GLADIATOR_HANG_DETECT
+	tristate "MSM Gladiator Hang Detection Support"
+	help
+	  This enables the gladiator hang detection module.
+	  If the configured threshold is reached, it causes SoC reset on
+	  gladiator hang detection and collects the context for the
+	  gladiator hang.
+
+config MSM_GLADIATOR_ERP
+	tristate "GLADIATOR coherency interconnect error reporting driver"
+	help
+	  Support dumping debug information for the GLADIATOR
+	  cache interconnect in the error interrupt handler.
+	  Meant to be used for debug scenarios only.
+
+	  If unsure, say N.
+
+config PANIC_ON_GLADIATOR_ERROR
+	depends on MSM_GLADIATOR_ERP
+	bool "Panic on GLADIATOR error report"
+	help
+	  Panic upon detection of an Gladiator coherency interconnect error
+	  in order to support dumping debug information.
+	  Meant to be used for debug scenarios only.
+
+	  If unsure, say N.
+
+config QCOM_FSA4480_I2C
+	bool "Fairchild FSA4480 chip with I2C"
+	select REGMAP_I2C
+	depends on I2C
+	help
+	  Support for the Fairchild FSA4480 IC switch chip controlled
+	  using I2C. This driver provides common support
+	  for accessing the device, switching between USB and Audio
+	  modes, changing orientation.
+
+config QCOM_WATCHDOG_V2
+	bool "QTI Watchdog Support"
+	depends on ARCH_QCOM
+	help
+	  This enables the watchdog module. It causes kernel panic if the
+	  watchdog times out. It allows for detection of cpu hangs and
+	  deadlocks. It does not run during the bootup process, so it will
+	  not catch any early lockups.
+
+config QCOM_FORCE_WDOG_BITE_ON_PANIC
+	bool "QCOM force watchdog bite"
+	depends on QCOM_WATCHDOG_V2
+	help
+	  This forces a watchdog bite when the device restarts due to a
+	  kernel panic. On certain MSM SoCs, this provides us
+	  additional debugging information.
+
+
+config QCOM_WDOG_IPI_ENABLE
+	bool "Qcom WDT pet optimization"
+	depends on QCOM_WATCHDOG_V2
+	default n
+	help
+	  When this option is enabled, watchdog sends IPI to cores in low power
+	  mode also. For power optimizations, by default watchdog don't ping
+	  cores in low power mode at pettime.
+
+	  To track CPUs health on LPM, or on debug builds enable it.
+
+config QCOM_BUS_SCALING
+	bool "Bus scaling driver"
+	help
+	This option enables bus scaling on MSM devices.  Bus scaling
+	allows devices to request the clocks be set to rates sufficient
+	for the active devices needs without keeping the clocks at max
+	frequency when a slower speed is sufficient.
+
+config  QCOM_BUS_CONFIG_RPMH
+	bool "RPMH Bus scaling driver"
+	depends on QCOM_BUS_SCALING
+	help
+	  This option enables bus scaling using QCOM specific hardware
+	  accelerators. It enables the translation of bandwidth requests
+	  from logical nodes to hardware nodes controlled by the BCM (Bus
+	  Clock Manager)
+
+config MSM_SPCOM
+	depends on QCOM_GLINK
+	bool "Secure Processor Communication over GLINK"
+	help
+	  spcom driver allows loading Secure Processor Applications and
+	  sending messages to Secure Processor Applications.
+	  spcom provides interface to both user space app and kernel driver.
+	  It is using glink as the transport layer, which provides multiple
+	  logical channels over single physical channel.
+	  The physical layer is based on shared memory and interrupts.
+	  spcom provides clients/server API, although currently only one client
+	  or server is allowed per logical channel.
+
+config QSEE_IPC_IRQ
+	bool "QSEE interrupt manager"
+	help
+	  The QSEE IPC IRQ controller manages the interrupts from the QTI
+	  secure execution environment. This interrupt controller will use
+	  the registers in the spcs region to mask and clear interrupts.
+	  Clients can use this driver to avoid adding common interrupt handling
+	  code.
+
+config MSM_SPSS_UTILS
+	depends on MSM_PIL
+	bool "Secure Processor Utilities"
+	help
+	  spss-utils driver selects Secure Processor firmware file name.
+	  The firmware file name for dev, test or production is selected
+	  based on two fuses.
+	  Different file name is used for differnt SPSS HW versions,
+	  because the SPSS firmware size is too small to support multiple
+	  HW versions.
+
+config QSEE_IPC_IRQ_BRIDGE
+	tristate "QSEE IPC Interrupt Bridge"
+	select QSEE_IPC_IRQ
+	help
+	  This module enables bridging an Inter-Processor Communication(IPC)
+	  interrupt from a remote subsystem directed towards
+	  Qualcomm Technologies, Inc. Secure Execution Environment(QSEE) to
+	  userspace. The interrupt will be propagated through a character device
+	  that userspace clients can poll on.
+
+config QCOM_GLINK
+	tristate "GLINK Probe Helper"
+	depends on RPMSG_QCOM_GLINK_SMEM
+	help
+	  This enables the GLINK Probe module. The GLINK RPMSG Plugin is
+	  currently designed to plugin with the remote proc framework as a
+	  subdev. This module is responsible for creating the glink transports
+	  when remote proc is disabled.
+
+config QCOM_GLINK_PKT
+	tristate "Enable device interface for GLINK packet channels"
+	depends on QCOM_GLINK
+	help
+	  G-link packet driver provides the interface for the userspace
+	  clients to communicate over G-Link via device nodes.
+	  This enable the userspace clients to read and write to
+	  some glink packets channel.
+
+config QCOM_SMP2P_SLEEPSTATE
+	bool "SMP2P Sleepstate notifier"
+	depends on QCOM_SMP2P
+	help
+	  When this option is enabled, notifications are sent to remote procs
+	  for the power state changes on the local processor. The notifications
+	  are sent through the smp2p framework. This driver can also receive
+	  notifications from the remote to prevent suspend on the local
+	  processor.
+
+config QCOM_QDSS_BRIDGE
+	bool "Configure bridge driver for QTI/Qualcomm Technologies, Inc. MDM"
+	depends on MHI_BUS
+	help
+	  The driver will help route diag traffic from modem side over the QDSS
+	  sub-system to USB on APSS side. The driver acts as a bridge between the
+	  MHI and USB interface.
+	  If unsure, say N.
+
+config MSM_CDSP_LOADER
+	tristate "CDSP loader support"
+	help
+	  This enables the CDSP loader driver that loads the CDSP
+	  firmware images and brings the compute DSP out of reset
+	  for platforms that have one.
+	  Say M if you want to enable this module.
+
+config QTI_SYSTEM_PM
+	bool
+
+config QCOM_SMCINVOKE
+	bool "Secure QSEE Support"
+	help
+	 Enable SMCInvoke driver which supports capability based secure
+	 communication between QTI Secure Execution Environment (QSEE)
+	 and high level operating system. It exposes APIs for both
+	 userspace and kernel clients.
+
+config SERIAL_NUM
+	bool "Enable Serial Number Proc Interface"
+	help
+	Provide a interface for reading CPU serial number
+
+config MSM_EVENT_TIMER
+	bool "Event timer"
+        help
+	  This option enables a modules that manages a list of event timers
+	  that need to be monitored by the PM. The enables the PM code to
+	  monitor events that require the core to be awake and ready to
+	  handle the event.
+
+config MSM_PM
+	depends on PM
+	select MSM_IDLE_STATS if DEBUG_FS
+	select CPU_IDLE_MULTIPLE_DRIVERS
+	select QTI_SYSTEM_PM if QCOM_RPMH
+	bool "Qualcomm Technologies, Inc. (QTI) Power Management Drivers"
+	help
+	  Platform specific power driver to manage cores and l2 low power
+	  modes. It interface with various system driver and put the cores
+	  into low power modes. It implements OS initiated scheme and
+	  determines last CPU to call into PSCI for cluster Low power
+	  modes.
+
+if MSM_PM
+menuconfig MSM_IDLE_STATS
+	bool "Collect idle statistics"
+	help
+	  Collect cores various low power mode idle statistics
+	  and export them in proc/msm_pm_stats. User can read
+	  this data and determine what low power modes and how
+	  many times cores have entered into LPM modes.
+
+if MSM_IDLE_STATS
+
+config MSM_IDLE_STATS_FIRST_BUCKET
+	int "First bucket time"
+	default 62500
+	help
+	  Upper time limit in nanoseconds of first bucket.
+
+config MSM_IDLE_STATS_BUCKET_SHIFT
+	int "Bucket shift"
+	default 2
+
+config MSM_IDLE_STATS_BUCKET_COUNT
+	int "Bucket count"
+	default 10
+
+config MSM_SUSPEND_STATS_FIRST_BUCKET
+	int "First bucket time for suspend"
+	default 1000000000
+	help
+	  Upper time limit in nanoseconds of first bucket of the
+	  histogram.  This is for collecting statistics on suspend.
+
+endif # MSM_IDLE_STATS
+endif # MSM_PM
+
+config QTI_L2_REUSE
+	bool "Qualcomm Technologies Inc (QTI) L2 reuse"
+	depends on ARCH_QCOM
+	help
+	  This module allows to configure the L2 reuse feature dynamically
+	  to let the power collapsed cluster's L2 cache usage by the active
+	  cluster cpu. Use sysfs interface to control enabling this feature.
+
+config QTI_RPM_STATS_LOG
+	bool "Qualcomm Technologies RPM Stats Driver"
+	depends on QCOM_RPMH || MSM_RPM_SMD
+	help
+	  This option enables a driver which reads RPM messages from a shared
+	  memory location. These messages provide statistical information about
+	  the low power modes that RPM enters. The drivers outputs the message
+	  via a sysfs node.
+
+config QTI_DDR_STATS_LOG
+	tristate "Qualcomm Technologies Inc (QTI) DDR Stats Driver"
+	depends on QCOM_RPMH
+	help
+	  This option enables a driver which reads DDR statistical information
+	  from AOP shared memory location such as DDR low power modes and DDR
+	  frequency residency and counts. The driver outputs information using
+	  sysfs.
+
+config MSM_JTAGV8
+	bool "Debug and ETM trace support across power collapse for ARMv8"
+	default y if CORESIGHT_SOURCE_ETM4X
+	help
+	  Enables support for debugging (specifically breakpoints) and ETM
+	  processor tracing across power collapse both for JTag and OS hosted
+	  software running on ARMv8 target. Enabling this will ensure debug
+	  and ETM registers are saved and restored across power collapse.
+	  If unsure, say 'N' here to avoid potential power, performance and
+	  memory penalty.
+config QTEE_SHM_BRIDGE
+	bool "QTI TEE shared memory bridge"
+	help
+	  QTEE shared memory bridge driver provides kernel APIs to share
+	  memory between trustzone & other VMs through shared memory bridge.
+	  It allows kernel clients to create bridge, delete bridge, and do
+	  memory sub-allocation and free from the default kernel bridge
+	  created by bridge driver.
+
+source "drivers/soc/qcom/memshare/Kconfig"
+config MSM_PERFORMANCE
+	tristate "msm performance driver to support userspace fmin/fmax request"
+	default n
+	help
+	This driver can restrict max freq or min freq of cpu cluster
+	when requested by the userspace by changing the cpufreq policy
+	fmin and fmax. The user space can request  the cpu freq change by
+	writing cpu#:freq values
+config QMP_DEBUGFS_CLIENT
+	bool "Debugfs Client to communicate with AOP using QMP protocol"
+	depends on DEBUG_FS
+	help
+	  This options enables a driver which allows clients to send messages
+	  to Alway On processor using QMP transport.
+
+config QCOM_CDSP_RM
+	bool "CDSP request manager"
+	depends on QCOM_GLINK
+	help
+	  This driver serves CDSP requests for CPU L3 clock and CPU QoS thus
+	  improving CDSP performance. Using this driver, CDSP can set appropriate
+	  CPU L3 clock for improving IO-Coherent throughput and opt for QoS mode
+	  to improve RPC latency. The driver also registers cooling devices for
+	  CDSP subsystem and implements Cx ipeak limit management.
+
+config QCOM_QHEE_ENABLE_MEM_PROTECTION
+	bool "QHEE enable kernel memory protection"
+	depends on QCOM_SCM
+	help
+	  When this option is enabled, an SCM call will be invoked to enable
+	  kernel memory protection in stage 2 memory mappings on kernel boot.
+	  This is part of a security feature in QHEE and need to be enabled by
+	  default.
+
+config QCOM_CX_IPEAK
+	bool "Common driver to handle Cx iPeak limitation"
+	help
+	  Cx ipeak HW module is used to limit the current drawn by various
+	  subsystem blocks on Cx power rail. Each client needs to set their
+	  bit in tcsr register if it is going to cross its own threshold.
+	  If all clients are going to cross their thresholds then Cx ipeak
+	  hw module will raise an interrupt to cDSP block to throttle cDSP fmax.
 endmenu
